@@ -7,11 +7,13 @@
 #version 150
 
 in float shade;
+in vec3 newColor;
 
 out vec4 out_Color;
-
+uniform sampler2D exampletexture;
+in vec2 frag_texcoord;
 void main(void)
 {
-	out_Color=vec4(shade,shade,shade,1.0);
-}
 
+  out_Color=texture(exampletexture,frag_texcoord) + vec4(newColor, 1.0);
+}

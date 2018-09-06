@@ -4,7 +4,7 @@
 // You will also need GLEW for Windows. You may sometimes need to work around
 // differences, e.g. additions in MicroGlut that don't exist in FreeGlut.
 
-// 2015: 
+// 2015:
 
 // Linux: gcc lab0.c ../common/*.c ../common/Linux/MicroGlut.c -lGL -o lab0 -I../common -I../common/Linux
 
@@ -23,16 +23,16 @@
 #include "loadobj.h"
 //#include "zpr.h"
 #include "LoadTGA.h"
-
+#include <math.h>
 //constants
 const int initWidth=512,initHeight=512;
 
 // Model-to-world matrix
 // Modify this matrix.
 // See below for how it is applied to your model.
-mat4 objectExampleMatrix = {{ 1.0, 0.0, 0.0, 0.0,
-                              0.0, 1.0, 0.0, 0.0,
-                              0.0, 0.0, 1.0, 0.0,
+mat4 objectExampleMatrix = {{ 0.5, 0.0, 0.0, 0.0,
+                              0.0, 0.5, 0.0, 0.0,
+                              0.0, 0.0, 0.5, 0.0,
                               0.0, 0.0, 0.0, 1.0}};
 // World-to-view matrix. Usually set by lookAt() or similar.
 mat4 viewMatrix;
@@ -42,10 +42,14 @@ mat4 projectionMatrix;
 // Globals
 // * Model(s)
 Model *bunny;
+
+Model *teapot;
 // * Reference(s) to shader program(s)
 GLuint program;
 // * Texture(s)
 GLuint texture;
+
+
 
 void init(void)
 {
@@ -64,9 +68,10 @@ void init(void)
 	// Load and compile shader
 	program = loadShaders("lab0.vert", "lab0.frag");
 	printError("init shader");
-	
+
 	// Upload geometry to the GPU:
-	bunny = LoadModelPlus("objects/stanford-bunny.obj");
+	bunny = LoadModelPlus("objects/bunnyplus.obj");
+	teapot = LoadModelPlus("objects/bunnyplus.obj");
 	printError("load models");
 
 	// Load textures
@@ -84,28 +89,56 @@ void display(void)
 
 	//activate the program, and set its variables
 	glUseProgram(program);
+	GLfloat time = glutGet(GLUT_ELAPSED_TIME);
+	mat4 rotMatZ = {{ cos(time / 1000), -sin(time / 1000), 0.0, 0.0,
+															 sin(time / 1000), cos(time / 1000), 0.0, 0.0,
+															 0.0, 0.0, 1.0, 0.0,
+															 0.0, 0.0, 0.0, 1.0}};
+ mat4 rotMatY = {{ cos(time / 1000), 0.0, sin(time / 1000), 0.0,
+															 0.0, 1.0, 0.0, 0.0,
+															 -sin(time / 1000), 0.0, cos(time / 1000), 0.0,
+															 0.0, 0.0, 0.0, 1.0}};
+ mat4 transX = {{ 0.5, 0.0, 0.0, 1.0,
+                               0.0, 0.5, 0.0, 0.0,
+                               0.0, 0.0, 0.5, 0.0,
+                               0.0, 0.0, 0.0, 1.0}};
+
 	glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	mat4 m = Mult(viewMatrix, objectExampleMatrix);
-	glUniformMatrix4fv(glGetUniformLocation(program, "viewMatrix"), 1, GL_TRUE, m.m);
+	//m = Mult(m, rotMatY); //rotate the bunny
 
-	//draw the model
-	DrawModel(bunny, program, "in_Position", "in_Normal", NULL);
-	
+	glUniformMatrix4fv(glGetUniformLocation(program, "viewMatrix"), 1, GL_TRUE, m.m);
+	glUniformMatrix4fv(glGetUniformLocation(program, "rotY"), 1, GL_TRUE, rotMatY.m);
+	glUniform1f(glGetUniformLocation(program, "time"), time);
+
+	glUniform1i(glGetUniformLocation(program,"exampletexture"),0);//the last argument has to be the same as the texture-unit that is to be used
+	glActiveTexture(GL_TEXTURE0);//which texture-unit is active
+	glBindTexture(GL_TEXTURE_2D, texture);//load the texture to active texture-unit
+
+	//printf("%.3f", time);
+	DrawModel(bunny, program, "in_Position", "in_Normal", "in_TexCoord");
+	mat4 teaStack = Mult(viewMatrix, transX);
+	teaStack = Mult(teaStack, rotMatY);
+	glUniformMatrix4fv(glGetUniformLocation(program, "viewMatrix"), 1, GL_TRUE, teaStack.m);
+
+
+
+
 	printError("display");
-	
+
 	glutSwapBuffers();
 }
 
 int main(int argc, char *argv[])
 {
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH|GLUT_DOUBLE);
 	glutInitContextVersion(3, 2);
 	glutCreateWindow ("Lab 0 - OpenGL 3.2+ Introduction");
-	glutDisplayFunc(display); 
+	glutDisplayFunc(display);
 	glutRepeatingTimer(20);
 	init ();
 	glutMainLoop();
 	exit(0);
 }
-
