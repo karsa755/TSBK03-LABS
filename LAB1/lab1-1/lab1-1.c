@@ -65,8 +65,8 @@ Model* squareModel;
 //----------------------Globals-------------------------------------------------
 Point3D cam, point;
 Model *model1;
-FBOstruct *fbo1, *fbo2;
-GLuint phongshader = 0, plaintextureshader = 0, lowpasshader = 0;
+FBOstruct *fbo1, *fbo2, *fbo3, *fbo4;
+GLuint phongshader = 0, lastShader = 0, lowpasshader = 0, thresholdshader = 0;
 
 //-------------------------------------------------------------------------------------
 
@@ -82,14 +82,18 @@ void init(void)
 	printError("GL inits");
 
 	// Load and compile shaders
-	plaintextureshader = loadShaders("plaintextureshader.vert", "plaintextureshader.frag");  // puts texture on teapot
+	lastShader = loadShaders("lastShader.vert", "lastShader.frag");  // puts texture on teapot
 	phongshader = loadShaders("phong.vert", "phong.frag");  // renders with light (used for initial renderin of teapot)
 	lowpasshader = loadShaders("lowpass.vert", "lowpass.frag"); //creates a lowpass filter
+	thresholdshader = loadShaders("thresh.vert", "thresh.frag"); //creates a thresholdshader filter
+	
 
 	printError("init shader");
 
 	fbo1 = initFBO(W, H, 0);
 	fbo2 = initFBO(W, H, 0);
+	fbo3 = initFBO(W, H, 0);
+	fbo4 = initFBO(W, H, 0);
 
 	// load the model
 //	model1 = LoadModelPlus("teapot.obj");
@@ -150,17 +154,23 @@ void display(void)
 
 	DrawModel(model1, phongshader, "in_Position", "in_Normal", NULL);
 
-	//NEW FBO LETS GO
+	//threshold FBO
+	useFBO(fbo2, fbo1, 0L);
+	glUseProgram(thresholdshader);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	DrawModel(squareModel, thresholdshader, "in_Position", NULL, "in_TexCoord");
+	//lowpass FBOs
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
-	for(int i = 0; i < 10; ++i)
+	for(int i = 0; i < 5; ++i)
 	{
-		useFBO(fbo2, fbo1, 0L);
+		useFBO(fbo3, fbo2, 0L);
 		glUseProgram(lowpasshader);
 		DrawModel(squareModel, lowpasshader, "in_Position", NULL, "in_TexCoord");
 
-		useFBO(fbo1, fbo2, 0L);
+		useFBO(fbo2, fbo3, 0L);
 		glUseProgram(lowpasshader);
 		DrawModel(squareModel, lowpasshader, "in_Position", NULL, "in_TexCoord");
 	}
@@ -168,16 +178,13 @@ void display(void)
 	// Done rendering the FBO! Set up for rendering on screen, using the result as texture!
 
 //	glFlush(); // Can cause flickering on some systems. Can also be necessary to make drawing complete.
-	useFBO(0L, fbo2, 0L);
-	glClearColor(0.0, 0.0, 0.0, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	useFBO(0L, fbo1, fbo3);
 	// Activate second shader program
-	glUseProgram(plaintextureshader);
-
+	glUseProgram(lastShader);
+	glUniform1i(glGetUniformLocation(lastShader, "bloom"), 1);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-	DrawModel(squareModel, plaintextureshader, "in_Position", NULL, "in_TexCoord");
+	DrawModel(squareModel, lastShader, "in_Position", NULL, "in_TexCoord");
 
 	glutSwapBuffers();
 }
