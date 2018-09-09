@@ -66,7 +66,7 @@ Model* squareModel;
 Point3D cam, point;
 Model *model1;
 FBOstruct *fbo1, *fbo2;
-GLuint phongshader = 0, plaintextureshader = 0;
+GLuint phongshader = 0, plaintextureshader = 0, lowpasshader = 0;
 
 //-------------------------------------------------------------------------------------
 
@@ -84,6 +84,7 @@ void init(void)
 	// Load and compile shaders
 	plaintextureshader = loadShaders("plaintextureshader.vert", "plaintextureshader.frag");  // puts texture on teapot
 	phongshader = loadShaders("phong.vert", "phong.frag");  // renders with light (used for initial renderin of teapot)
+	lowpasshader = loadShaders("lowpass.vert", "lowpass.frag"); //creates a lowpass filter
 
 	printError("init shader");
 
@@ -149,10 +150,25 @@ void display(void)
 
 	DrawModel(model1, phongshader, "in_Position", "in_Normal", NULL);
 
+	//NEW FBO LETS GO
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+
+	for(int i = 0; i < 10; ++i)
+	{
+		useFBO(fbo2, fbo1, 0L);
+		glUseProgram(lowpasshader);
+		DrawModel(squareModel, lowpasshader, "in_Position", NULL, "in_TexCoord");
+
+		useFBO(fbo1, fbo2, 0L);
+		glUseProgram(lowpasshader);
+		DrawModel(squareModel, lowpasshader, "in_Position", NULL, "in_TexCoord");
+	}
+
 	// Done rendering the FBO! Set up for rendering on screen, using the result as texture!
 
 //	glFlush(); // Can cause flickering on some systems. Can also be necessary to make drawing complete.
-	useFBO(0L, fbo1, 0L);
+	useFBO(0L, fbo2, 0L);
 	glClearColor(0.0, 0.0, 0.0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
