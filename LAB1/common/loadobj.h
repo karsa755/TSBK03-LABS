@@ -34,17 +34,17 @@ typedef struct
 
 // Basic model loading
 
-Model* LoadModel(const char* name); // Old version, single part OBJ only!
-Model** LoadModel2(const char* name); // Multi-part OBJ!
+Model* LoadModel(char* name); // Old version, single part OBJ only!
+Model** LoadModel2(char* name); // Multi-part OBJ!
 
 // Extended, load model and upload to arrays!
 // DrawModel is for drawing such preloaded models.
 
-void DrawModel(Model *m, GLuint program, const char* vertexVariableName, const char* normalVariableName, const char* texCoordVariableName);
-void DrawWireframeModel(Model *m, GLuint program, const char* vertexVariableName, const char* normalVariableName, const char* texCoordVariableName);
+void DrawModel(Model *m, GLuint program, char* vertexVariableName, char* normalVariableName, char* texCoordVariableName);
+void DrawWireframeModel(Model *m, GLuint program, char* vertexVariableName, char* normalVariableName, char* texCoordVariableName);
 
-Model* LoadModelPlus(const char* name);
-Model** LoadModel2Plus(const char* name);
+Model* LoadModelPlus(char* name);
+Model** LoadModel2Plus(char* name);
 
 // Utility functions that you may need if you want to modify the model.
 

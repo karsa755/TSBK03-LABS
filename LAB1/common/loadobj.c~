@@ -1069,6 +1069,29 @@ Model* LoadModel(char* name)
 {
 	Model* model = 0;
 	Mesh* mesh = LoadOBJ(name);
+
+	if (!mesh)
+		return 0;
+	
+	Model **md = calloc(sizeof(Model *), i);
+	printf("Working with %d parts\n", i);//sleep(1);
+	for (ii = 0; ii < i; ii++)
+	{
+		if (mm[ii] == NULL)
+			printf("Error at %d\n", ii);
+		DecomposeToTriangles(mm[ii]);
+	
+		GenerateNormals(mm[ii]);
+		
+		md[ii] = GenerateModel(mm[ii]);
+		
+//		DisposeMesh(mm[ii]);
+	}
+	free(mm);
+
+	
+	
+	
 	
 	DecomposeToTriangles(mesh);
 
