@@ -86,7 +86,7 @@ void init(void)
 	phongshader = loadShaders("phong.vert", "phong.frag");  // renders with light (used for initial renderin of teapot)
 	lowpasshader = loadShaders("lowpass.vert", "lowpass.frag"); //creates a lowpass filter
 	thresholdshader = loadShaders("thresh.vert", "thresh.frag"); //creates a thresholdshader filter
-	
+
 
 	printError("init shader");
 
@@ -121,7 +121,7 @@ void OnTimer(int value)
 void display(void)
 {
 	mat4 vm2;
-	
+
 	// This function is called whenever it is time to render
 	//  a new frame; due to the idle()-function below, this
 	//  function will get called several times per second
@@ -164,7 +164,9 @@ void display(void)
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
-	for(int i = 0; i < 5; ++i)
+	int const MAX_ITER = 15;
+	int i = 0;
+	for( i = 0; i < MAX_ITER; ++i)
 	{
 		useFBO(fbo3, fbo2, 0L);
 		glUseProgram(lowpasshader);
@@ -223,4 +225,3 @@ int main(int argc, char *argv[])
 	glutMainLoop();
 	exit(0);
 }
-

@@ -7,5 +7,5 @@ out vec4 out_Color;
 
 void main(void)
 {
-    out_Color = 1.0 * texture(texUnit, outTexCoord) + 1.5 * texture(bloom, outTexCoord);
+    out_Color = 1.0 * texture(bloom, outTexCoord);
 }
