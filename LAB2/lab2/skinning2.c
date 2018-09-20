@@ -265,8 +265,12 @@ void DeformCylinder()
 		}
 		else
 		{
-			
+			resultInv[i] = resultInv[i-1] * T(-g_bones[kMaxBones-1-i].pos.x, -g_bones[kMaxBones-1-i].pos.y, -g_bones[kMaxBones-1-i].pos.z);
+			translate = T(g_bones[i].pos.x, g_bones[i].pos.y, g_bones[i].pos.z);
+			mBone = Mult(translate, g_bones[i].rot);
+			result[i] = result[i-1] * mBone;
 		}
+
 
 
 	}
