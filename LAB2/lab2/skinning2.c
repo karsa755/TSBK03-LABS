@@ -248,7 +248,7 @@ void DeformCylinder()
   //vec3 v[kMaxBones];
 
   //float w[kMaxBones];
-  int row, corner, i, bone;
+  int row, corner, i;
 	mat4 result[kMaxBones];
 	mat4 resultInv[kMaxBones];
 	mat4 realResult[kMaxBones];
@@ -258,7 +258,6 @@ void DeformCylinder()
 		
 		if(i == 0)
 		{
-			printf("%f", g_bones[i].pos.x);
 			translate = T(g_bones[i].pos.x, g_bones[i].pos.y, g_bones[i].pos.z);
 			mBoneInv = T(-g_bones[i].pos.x, -g_bones[i].pos.y, -g_bones[i].pos.z);
 			mBone = Mult(translate, Mult(g_bones[i].rot, g_bonesRes[i].rot));
@@ -273,10 +272,9 @@ void DeformCylinder()
 			mBone = Mult(translate, Mult(g_bones[i].rot, g_bonesRes[i].rot));
 			result[i] = Mult(result[i-1], mBone);
 			realResult[i] = Mult(result[i], resultInv[i]);
-		}
-
-
+		}		
 	}
+	
   // f�r samtliga vertexar
   for (row = 0; row < kMaxRow; row++)
   {
@@ -292,6 +290,7 @@ void DeformCylinder()
       // g_boneWeights
       // g_vertsOrg
       // g_vertsRes
+			int bone;
 			for(bone = 0; bone < kMaxBones; ++bone)
 			{
 				resVec = VectorAdd(resVec, ScalarMult(MultVec3(realResult[bone], g_vertsOrg[row][corner]), g_boneWeights[row][corner][bone]));
