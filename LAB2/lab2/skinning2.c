@@ -248,29 +248,32 @@ void DeformCylinder()
   //vec3 v[kMaxBones];
 
   //float w[kMaxBones];
-  int row, corner, i;
+  int row, corner, i, bone;
 	mat4 result[kMaxBones];
 	mat4 resultInv[kMaxBones];
+	mat4 realResult[kMaxBones];
   mat4 translate, mBoneInv, mBone;
 	for(i = 0; i < kMaxBones; ++i)
 	{
-
+		
 		if(i == 0)
 		{
+			printf("%f", g_bones[i].pos.x);
 			translate = T(g_bones[i].pos.x, g_bones[i].pos.y, g_bones[i].pos.z);
-			mBoneInv = T(-g_bones[kMaxBones-1-i].pos.x, -g_bones[kMaxBones-1-i].pos.y, -g_bones[kMaxBones-1-i].pos.z);
-			mBone = Mult(translate, g_bones[i].rot);
+			mBoneInv = T(-g_bones[i].pos.x, -g_bones[i].pos.y, -g_bones[i].pos.z);
+			mBone = Mult(translate, Mult(g_bones[i].rot, g_bonesRes[i].rot));
 			result[i] = mBone;
 			resultInv[i] = mBoneInv;
+			realResult[i] = Mult(result[i], resultInv[i]);
 		}
 		else
 		{
-			resultInv[i] = resultInv[i-1] * T(-g_bones[kMaxBones-1-i].pos.x, -g_bones[kMaxBones-1-i].pos.y, -g_bones[kMaxBones-1-i].pos.z);
-			translate = T(g_bones[i].pos.x, g_bones[i].pos.y, g_bones[i].pos.z);
-			mBone = Mult(translate, g_bones[i].rot);
-			result[i] = result[i-1] * mBone;
+			resultInv[i] = Mult(T(-(g_bones[i].pos.x-g_bones[i-1].pos.x), -(g_bones[i].pos.y-g_bones[i-1].pos.y), -(g_bones[i].pos.z-g_bones[i-1].pos.z)), resultInv[i-1]);
+			translate = T(g_bones[i].pos.x-g_bones[i-1].pos.x, g_bones[i].pos.y-g_bones[i-1].pos.y, g_bones[i].pos.z-g_bones[i-1].pos.z);
+			mBone = Mult(translate, Mult(g_bones[i].rot, g_bonesRes[i].rot));
+			result[i] = Mult(result[i-1], mBone);
+			realResult[i] = Mult(result[i], resultInv[i]);
 		}
-
 
 
 	}
@@ -279,6 +282,7 @@ void DeformCylinder()
   {
     for (corner = 0; corner < kMaxCorners; corner++)
     {
+			vec3 resVec = {0.0, 0.0, 0.0};
       // ---------=========  UPG 4 ===========---------
       // TODO: skinna meshen mot alla benen.
       //
@@ -288,7 +292,11 @@ void DeformCylinder()
       // g_boneWeights
       // g_vertsOrg
       // g_vertsRes
-
+			for(bone = 0; bone < kMaxBones; ++bone)
+			{
+				resVec = VectorAdd(resVec, ScalarMult(MultVec3(realResult[bone], g_vertsOrg[row][corner]), g_boneWeights[row][corner][bone]));
+			}
+			g_vertsRes[row][corner] = resVec;
     }
   }
 }
