@@ -260,7 +260,7 @@ void DeformCylinder()
 		{
 			translate = T(g_bones[i].pos.x, g_bones[i].pos.y, g_bones[i].pos.z);
 			mBoneInv = T(-g_bones[i].pos.x, -g_bones[i].pos.y, -g_bones[i].pos.z);
-			mBone = Mult(translate, Mult(g_bones[i].rot, g_bonesRes[i].rot));
+			mBone = Mult(translate, g_bonesRes[i].rot);
 			result[i] = mBone;
 			resultInv[i] = mBoneInv;
 			realResult[i] = Mult(result[i], resultInv[i]);
@@ -269,7 +269,7 @@ void DeformCylinder()
 		{
 			resultInv[i] = Mult(T(-(g_bones[i].pos.x-g_bones[i-1].pos.x), -(g_bones[i].pos.y-g_bones[i-1].pos.y), -(g_bones[i].pos.z-g_bones[i-1].pos.z)), resultInv[i-1]);
 			translate = T(g_bones[i].pos.x-g_bones[i-1].pos.x, g_bones[i].pos.y-g_bones[i-1].pos.y, g_bones[i].pos.z-g_bones[i-1].pos.z);
-			mBone = Mult(translate, Mult(g_bones[i].rot, g_bonesRes[i].rot));
+			mBone = Mult(translate,  g_bonesRes[i].rot);
 			result[i] = Mult(result[i-1], mBone);
 			realResult[i] = Mult(result[i], resultInv[i]);
 		}		
