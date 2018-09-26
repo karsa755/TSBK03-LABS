@@ -1,6 +1,6 @@
 // Laboration i spelfysik: Biljardbordet
-// Av Ingemar Ragnemalm 2010, baserad pŒ material av Tomas Szabo.
-// 2012: Ported to OpenGL 3.2 by Justina Mickonyt‘ and Ingemar R.
+// Av Ingemar Ragnemalm 2010, baserad pï¿½ material av Tomas Szabo.
+// 2012: Ported to OpenGL 3.2 by Justina Mickonytï¿½ and Ingemar R.
 // 2013: Adapted to VectorUtils3 and MicroGlut.
 
 // gcc lab3.c ../common/*.c -lGL -o lab3 -I../common 
@@ -36,7 +36,8 @@
 
 #define NUM_LIGHTS 1
 #define kBallSize 0.1
-
+#define PI 3.14159265359
+#define TORADIAN 3.14159265359 / 180
 #define abs(x) (x > 0.0? x: -x)
 
 void onTimer(int value);
@@ -113,6 +114,7 @@ Ball ball[16]; // We only use kNumBalls but textures for all 16 are always loade
 GLfloat deltaT, currentTime;
 
 vec3 cam, point;
+vec3 UP = {0.0,1.0, 0.0};
 
 GLuint shader = 0;
 GLint lastw = W, lasth = H;  // for resizing
@@ -193,7 +195,14 @@ void updateWorld()
 	// friction against floor, simplified as well as more correct
 	for (i = 0; i < kNumBalls; i++)
 	{
-		// YOUR CODE HERE
+        //this is the easy rotation
+		float area = 2*PI  * kBallSize;
+        float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
+        float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
+        vec3 rotX = {1.0, 0.0, 0.0};
+        vec3 rotZ = {0.0, 0.0, 1.0};
+        ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
+        
 	}
 
 // Update state, follows the book closely
