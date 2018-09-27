@@ -3,7 +3,7 @@
 // 2012: Ported to OpenGL 3.2 by Justina Mickonyt� and Ingemar R.
 // 2013: Adapted to VectorUtils3 and MicroGlut.
 
-// gcc lab3.c ../common/*.c -lGL -o lab3 -I../common 
+// gcc lab3.c ../common/*.c -lGL -o lab3 -I../common
 
 // Includes vary a bit with platforms.
 // MS Windows needs GLEW or glee.
@@ -39,7 +39,7 @@
 #define PI 3.14159265359
 #define TORADIAN 3.14159265359 / 180
 #define abs(x) (x > 0.0? x: -x)
-
+#define ELASTICITY 1.0
 void onTimer(int value);
 
 static double startTime = 0;
@@ -78,7 +78,7 @@ typedef struct
 
   vec3 F, T; // accumulated force and torque
 
-//  mat4 J, Ji; We could have these but we can live without them for spheres.
+  mat4 J, Ji; //We could have these but we can live without them for spheres.
   vec3 omega; // Angular momentum
   vec3 v; // Change in velocity
 
@@ -104,7 +104,7 @@ Material ballMt = { { 1.0, 1.0, 1.0, 1.0 }, { 1.0, 1.0, 1.0, 0.0 },
                 };
 
 
-enum {kNumBalls = 16}; // Change as desired, max 16
+enum {kNumBalls = 4}; // Change as desired, max 16
 
 //------------------------------Globals---------------------------------
 ModelTexturePair tableAndLegs, tableSurf;
@@ -188,21 +188,35 @@ void updateWorld()
 	for (i = 0; i < kNumBalls; i++)
         for (j = i+1; j < kNumBalls; j++)
         {
-            // YOUR CODE HERE
+						vec3 Vspeed = VectorSub(ball[i].v, ball[j].v);
+            vec3 difference = VectorSub(ball[i].X, ball[j].X);
+						if(Norm(difference) <= 2*kBallSize)
+						{
+							vec3 normalVec = Normalize(difference);
+							float Jres = (-(ELASTICITY + 1) * DotProduct(Vspeed, normalVec)*ball[i].mass * ball[j].mass) / (ball[i].mass + ball[j].mass);
+							ball[i].P = VectorAdd(ball[i].P, ScalarMult(normalVec,Jres));
+							ball[j].P = VectorAdd(ball[j].P, ScalarMult(normalVec,-Jres));
+						}
         }
 
 	// Control rotation here to reflect
 	// friction against floor, simplified as well as more correct
 	for (i = 0; i < kNumBalls; i++)
 	{
-        //this is the easy rotation
-		float area = 2*PI  * kBallSize;
-        float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
-        float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
-        vec3 rotX = {1.0, 0.0, 0.0};
-        vec3 rotZ = {0.0, 0.0, 1.0};
-        ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
-        
+
+		mat4 Wstar = CrossMatrix(ScalarMult(ball[i].omega,deltaT));
+		mat4 Rd = Mult(Wstar, ball[i].R);
+		ball[i].R = MatrixAdd(ball[i].R, Rd);
+    //this is the easy rotation
+		//float area = 2*PI  * kBallSize;
+    //float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
+    //float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
+    //vec3 rotX = {1.0, 0.0, 0.0};
+    //vec3 rotZ = {0.0, 0.0, 1.0};
+    //ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
+
+
+
 	}
 
 // Update state, follows the book closely
@@ -230,6 +244,7 @@ void updateWorld()
 //		L := L + t * dT
 		dL = ScalarMult(ball[i].T, deltaT); // dL := T*dT
 		ball[i].L = VectorAdd(ball[i].L, dL); // L := L + dL
+		ball[i].omega = MultVec3(ball[i].Ji, ball[i].L);
 
 		OrthoNormalizeMatrix(&ball[i].R);
 	}
@@ -313,9 +328,15 @@ void init()
 	for (i = 0; i < kNumBalls; i++)
 	{
 		ball[i].mass = 1.0;
+		if(i == 1)
+		{
+			//ball[i].mass = 5.0;
+		}
 		ball[i].X = SetVector(0.0, 0.0, 0.0);
 		ball[i].P = SetVector(((float)(i % 13))/ 50.0, 0.0, ((float)(i % 15))/50.0);
 		ball[i].R = IdentityMatrix();
+		ball[i].J = S((kBallSize*kBallSize*2*ball[i].mass)/12.0,(kBallSize*kBallSize*2*ball[i].mass)/12.0,(kBallSize*kBallSize*2*ball[i].mass)/12.0);
+		ball[i].Ji = InvertMat4(ball[i].J);
 	}
 	ball[0].X = SetVector(0, 0, 0);
 	ball[1].X = SetVector(0, 0, 0.5);
