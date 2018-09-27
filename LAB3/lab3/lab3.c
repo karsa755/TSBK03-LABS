@@ -205,14 +205,14 @@ void updateWorld()
 	for (i = 0; i < kNumBalls; i++)
 	{
 
-    //this is the easy rotation
+        //this is the easy rotation
 		float area = 2*PI  * kBallSize;
-    float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
-    float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
-    vec3 rotX = {1.0, 0.0, 0.0};
-    vec3 rotZ = {0.0, 0.0, 1.0};
-    ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
-		ball[i].omega = MultVec3(ball[i].Ji, ball[i].L);
+        float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
+        float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
+        vec3 rotX = {1.0, 0.0, 0.0};
+        vec3 rotZ = {0.0, 0.0, 1.0};
+        ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
+		
 
 
 	}
@@ -225,7 +225,7 @@ void updateWorld()
 
 		// Note: omega is not set. How do you calculate it?
 		// YOUR CODE HERE
-
+        ball[i].omega = MultVec3(ball[i].Ji, ball[i].L);
 //		v := P * 1/mass
 
 		ball[i].v = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
@@ -334,7 +334,8 @@ void init()
 		ball[i].X = SetVector(0.0, 0.0, 0.0);
 		ball[i].P = SetVector(((float)(i % 13))/ 50.0, 0.0, ((float)(i % 15))/50.0);
 		ball[i].R = IdentityMatrix();
-		ball[i].J = S((kBallSize*kBallSize*2*ball[i].mass)/12.0,(kBallSize*kBallSize*2*ball[i].mass)/12.0,(kBallSize*kBallSize*2*ball[i].mass)/12.0);
+        float diag = (kBallSize*kBallSize*2*ball[i].mass)/12.0;
+		ball[i].J = S(diag,diag,diag);
 		ball[i].Ji = InvertMat4(ball[i].J);
 	}
 	ball[0].X = SetVector(0, 0, 0);
