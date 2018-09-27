@@ -188,10 +188,11 @@ void updateWorld()
 	for (i = 0; i < kNumBalls; i++)
         for (j = i+1; j < kNumBalls; j++)
         {
-						vec3 Vspeed = VectorSub(ball[i].v, ball[j].v);
+
             vec3 difference = VectorSub(ball[i].X, ball[j].X);
 						if(Norm(difference) <= 2*kBallSize)
 						{
+							vec3 Vspeed = VectorSub(ball[i].v, ball[j].v);
 							vec3 normalVec = Normalize(difference);
 							float Jres = (-(ELASTICITY + 1) * DotProduct(Vspeed, normalVec)*ball[i].mass * ball[j].mass) / (ball[i].mass + ball[j].mass);
 							ball[i].P = VectorAdd(ball[i].P, ScalarMult(normalVec,Jres));
@@ -204,17 +205,14 @@ void updateWorld()
 	for (i = 0; i < kNumBalls; i++)
 	{
 
-		mat4 Wstar = CrossMatrix(ScalarMult(ball[i].omega,deltaT));
-		mat4 Rd = Mult(Wstar, ball[i].R);
-		ball[i].R = MatrixAdd(ball[i].R, Rd);
     //this is the easy rotation
-		//float area = 2*PI  * kBallSize;
-    //float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
-    //float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
-    //vec3 rotX = {1.0, 0.0, 0.0};
-    //vec3 rotZ = {0.0, 0.0, 1.0};
-    //ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
-
+		float area = 2*PI  * kBallSize;
+    float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
+    float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
+    vec3 rotX = {1.0, 0.0, 0.0};
+    vec3 rotZ = {0.0, 0.0, 1.0};
+    ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
+		ball[i].omega = MultVec3(ball[i].Ji, ball[i].L);
 
 
 	}
@@ -229,6 +227,7 @@ void updateWorld()
 		// YOUR CODE HERE
 
 //		v := P * 1/mass
+
 		ball[i].v = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
 //		X := X + v*dT
 		dX = ScalarMult(ball[i].v, deltaT); // dX := v*dT
@@ -244,7 +243,7 @@ void updateWorld()
 //		L := L + t * dT
 		dL = ScalarMult(ball[i].T, deltaT); // dL := T*dT
 		ball[i].L = VectorAdd(ball[i].L, dL); // L := L + dL
-		ball[i].omega = MultVec3(ball[i].Ji, ball[i].L);
+
 
 		OrthoNormalizeMatrix(&ball[i].R);
 	}
