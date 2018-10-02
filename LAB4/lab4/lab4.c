@@ -17,15 +17,23 @@
 #include "SpriteLight.h"
 #include "GL_utilities.h"
 
-// LŠgg till egna globaler hŠr efter behov.
+// Lï¿½gg till egna globaler hï¿½r efter behov.
 
 
 void SpriteBehavior() // Din kod!
 {
-// LŠgg till din labbkod hŠr. Det gŒr bra att Šndra var som helst i
-// koden i švrigt, men mycket kan samlas hŠr. Du kan utgŒ frŒn den
-// globala listroten, gSpriteRoot, fšr att kontrollera alla sprites
-// hastigheter och positioner, eller arbeta frŒn egna globaler.
+// Lï¿½gg till din labbkod hï¿½r. Det gï¿½r bra att ï¿½ndra var som helst i
+// koden i ï¿½vrigt, men mycket kan samlas hï¿½r. Du kan utgï¿½ frï¿½n den
+// globala listroten, gSpriteRoot, fï¿½r att kontrollera alla sprites
+// hastigheter och positioner, eller arbeta frï¿½n egna globaler.
+	SpritePtr sprite;
+	sprite = gSpriteRoot;
+
+
+	do{
+
+		sprite = sprite->next;
+	} while(sprite != NULL);
 }
 
 // Drawing routine
@@ -96,8 +104,8 @@ void Init()
 	
 	LoadTGATextureSimple("bilder/leaves.tga", &backgroundTexID); // Bakgrund
 	
-	sheepFace = GetFace("bilder/sheep.tga"); // Ett fŒr
-	blackFace = GetFace("bilder/blackie.tga"); // Ett svart fŒr
+	sheepFace = GetFace("bilder/sheep.tga"); // Ett fï¿½r
+	blackFace = GetFace("bilder/blackie.tga"); // Ett svart fï¿½r
 	dogFace = GetFace("bilder/dog.tga"); // En hund
 	foodFace = GetFace("bilder/mat.tga"); // Mat
 	
