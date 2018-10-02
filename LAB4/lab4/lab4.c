@@ -12,13 +12,20 @@
 	#include "MicroGlut.h"
 #endif
 
+#include <math.h>
 #include <stdlib.h>
 #include "LoadTGA.h"
 #include "SpriteLight.h"
 #include "GL_utilities.h"
 
 // L�gg till egna globaler h�r efter behov.
-
+float distBtwPts(FPoint j, FPoint i)
+{
+	float diffX = powf(j.v - i.v, 2);
+	float diffY = powf(j.h - i.h,2);
+	float res = sqrtf(diffX + diffY);
+	return res;
+}
 
 void SpriteBehavior() // Din kod!
 {
@@ -28,11 +35,19 @@ void SpriteBehavior() // Din kod!
 // hastigheter och positioner, eller arbeta fr�n egna globaler.
 	SpritePtr sprite;
 	sprite = gSpriteRoot;
-
-
+	SpritePtr sprite2;
+	sprite2 = gSpriteRoot;
+	FPoint speedDiff, averagePos, avoidanceVector;
 	do{
-
+		do {
+			if(sprite != sprite2) //is this possible?
+			{
+				float dist = distBtwPts(sprite2->position, sprite->position);
+			}
+			sprite2 = sprite2->next;
+		} while(sprite2 != NULL);
 		sprite = sprite->next;
+		sprite2 = gSpriteRoot;
 	} while(sprite != NULL);
 }
 
