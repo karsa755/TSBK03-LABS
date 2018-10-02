@@ -214,7 +214,7 @@ void updateWorld()
         //ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
         
         vec3 Vrig = VectorAdd(ball[i].v, CrossProduct(ball[i].omega, contactPoint));
-        vec3 Ff = ScalarMult(Vrig, -1.0);
+        vec3 Ff = ScalarMult(Vrig, -0.6);
         ball[i].F = VectorAdd(ball[i].F, Ff);
         ball[i].T = VectorAdd(ball[i].T, CrossProduct(contactPoint, Ff));
 	}
