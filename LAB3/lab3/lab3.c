@@ -114,7 +114,6 @@ Ball ball[16]; // We only use kNumBalls but textures for all 16 are always loade
 GLfloat deltaT, currentTime;
 
 vec3 cam, point;
-vec3 UP = {0.0,1.0, 0.0};
 
 GLuint shader = 0;
 GLint lastw = W, lasth = H;  // for resizing
@@ -202,19 +201,22 @@ void updateWorld()
 
 	// Control rotation here to reflect
 	// friction against floor, simplified as well as more correct
+    vec3 contactPoint = {0.0, -kBallSize, 0.0};
 	for (i = 0; i < kNumBalls; i++)
 	{
 
         //this is the easy rotation
-		float area = 2*PI  * kBallSize;
-        float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
-        float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
-        vec3 rotX = {1.0, 0.0, 0.0};
-        vec3 rotZ = {0.0, 0.0, 1.0};
-        ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
-		
-
-
+		//float area = 2*PI  * kBallSize;
+        //float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
+        //float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
+        //vec3 rotX = {1.0, 0.0, 0.0};
+        //vec3 rotZ = {0.0, 0.0, 1.0};
+        //ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
+        
+        vec3 Vrig = VectorAdd(ball[i].v, CrossProduct(ball[i].omega, contactPoint));
+        vec3 Ff = ScalarMult(Vrig, -1.0);
+        ball[i].F = VectorAdd(ball[i].F, Ff);
+        ball[i].T = VectorAdd(ball[i].T, CrossProduct(contactPoint, Ff));
 	}
 
 // Update state, follows the book closely
@@ -243,7 +245,6 @@ void updateWorld()
 //		L := L + t * dT
 		dL = ScalarMult(ball[i].T, deltaT); // dL := T*dT
 		ball[i].L = VectorAdd(ball[i].L, dL); // L := L + dL
-
 
 		OrthoNormalizeMatrix(&ball[i].R);
 	}
@@ -334,7 +335,8 @@ void init()
 		ball[i].X = SetVector(0.0, 0.0, 0.0);
 		ball[i].P = SetVector(((float)(i % 13))/ 50.0, 0.0, ((float)(i % 15))/50.0);
 		ball[i].R = IdentityMatrix();
-        float diag = (kBallSize*kBallSize*2*ball[i].mass)/12.0;
+        float diag = (kBallSize*kBallSize*ball[i].mass)/3.0;
+        //float diag = (kBallSize*kBallSize*2*ball[i].mass)/5.0; //theoretical moment of inertia for sphere
 		ball[i].J = S(diag,diag,diag);
 		ball[i].Ji = InvertMat4(ball[i].J);
 	}
