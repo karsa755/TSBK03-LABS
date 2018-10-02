@@ -12,6 +12,8 @@
 	#include "MicroGlut.h"
 #endif
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+
 #include <math.h>
 #include <stdlib.h>
 #include "LoadTGA.h"
@@ -19,6 +21,11 @@
 #include "GL_utilities.h"
 
 // L�gg till egna globaler h�r efter behov.
+float maxDistance = 90.0f; 
+float cohW = 1.0;
+float avoidW = 1.5;
+float alignW = 1.0;
+
 float distBtwPts(FPoint j, FPoint i)
 {
 	float diffX = powf(j.v - i.v, 2);
@@ -26,29 +33,89 @@ float distBtwPts(FPoint j, FPoint i)
 	float res = sqrtf(diffX + diffY);
 	return res;
 }
+void initPt(FPoint pt)
+{
+	pt.h = 0;
+	pt.v = 0;
+}
+
+
+FPoint calcAvoidance(FPoint j, FPoint i)
+{
+	FPoint res;
+	float length = distBtwPts(j,i);
+	res.h = (j.h - i.h) / (length);
+	res.v = (j.v - i.v) / ( length);
+	return res;
+}
 
 void SpriteBehavior() // Din kod!
 {
-// L�gg till din labbkod h�r. Det g�r bra att �ndra var som helst i
-// koden i �vrigt, men mycket kan samlas h�r. Du kan utg� fr�n den
-// globala listroten, gSpriteRoot, f�r att kontrollera alla sprites
-// hastigheter och positioner, eller arbeta fr�n egna globaler.
 	SpritePtr sprite;
+	float count;
+	float kmaxDist = 200.0f;
 	sprite = gSpriteRoot;
 	SpritePtr sprite2;
 	sprite2 = gSpriteRoot;
 	FPoint speedDiff, averagePos, avoidanceVector;
 	do{
+		initPt(speedDiff);
+		initPt(averagePos);
+		initPt(avoidanceVector);
+		sprite2 = gSpriteRoot;
+		count = 0;
 		do {
-			if(sprite != sprite2) //is this possible?
+			//is this possible? checking 2 sprites that is.
+			if(sprite != sprite2 && distBtwPts(sprite2->position, sprite->position) < maxDistance) 
 			{
-				float dist = distBtwPts(sprite2->position, sprite->position);
+				//alignment
+				speedDiff.h += sprite2->position.h - sprite->position.h;
+				speedDiff.v += sprite2->position.v - sprite->position.v; 
+				//cohesion
+				averagePos.h += sprite2->position.h;
+				averagePos.v += sprite2->position.v;
+				// seperation
+				FPoint avoid = calcAvoidance(sprite2->position, sprite->position);
+				avoidanceVector.h += avoid.h;
+				avoidanceVector.v += avoid.v;
+				count++;	
 			}
 			sprite2 = sprite2->next;
 		} while(sprite2 != NULL);
+		if(count > 0)
+		{
+			//printf("i am here");
+			sprite->spdDiff.h = speedDiff.h / count;
+			sprite->spdDiff.v = speedDiff.v / count;
+			sprite->avPos.h = averagePos.h / count;
+			sprite->avPos.v = averagePos.v / count;
+			sprite->avoidVec.h = avoidanceVector.h / count;
+			sprite->avoidVec.v = avoidanceVector.v / count;
+		}
 		sprite = sprite->next;
-		sprite2 = gSpriteRoot;
 	} while(sprite != NULL);
+
+	SpritePtr newSp;
+	newSp = gSpriteRoot;
+	do {
+			
+		newSp->speed.h += (newSp->avPos.h - newSp->position.h) * cohW;
+		newSp->speed.v += (newSp->avPos.v - newSp->position.v) * cohW;
+
+		newSp->speed.h += (newSp->avoidVec.h) * avoidW;
+		newSp->speed.v += (newSp->avoidVec.v) * avoidW;
+
+		newSp->speed.h += (newSp->spdDiff.h) * alignW;
+		newSp->speed.v += (newSp->spdDiff.h) * alignW;
+		float norm = sqrt(pow(newSp->speed.h,2) + pow(newSp->speed.v,2));
+		newSp-> speed.h /= norm;
+		newSp-> speed.v /= norm;
+
+		newSp->position.h += newSp->speed.h;
+		newSp->position.v += newSp->speed.v;
+		
+		newSp = newSp->next;
+	} while(newSp != NULL);
 }
 
 // Drawing routine
