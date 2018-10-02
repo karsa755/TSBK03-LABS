@@ -1,0 +1,16 @@
+Vad blir den förenklade formeln?
+    - ta bort termen med alla kryssprodukter
+
+Vilket av testfallen var svårast att uppfylla, och varför?
+    - vet inte riktigt om det  fanns nån som var svår o uppfylla, men den sista kanske?
+
+Vad blir tröghetsmatrisen för denna modell?
+    - I = (1/3) * r*r*m, i diagonalen, resten är noll.
+
+Hur kan denna tröghetsmatris på enklast möjliga sätt användas för att 
+beräkna rotationshastigheten omega från rörelsemängdsmomentet L?
+    - w = Ji * L
+
+För att nu beräkna en kraft måste vi beräkna hastighetsskillnaden i bollens kontaktpunkt med underlaget. 
+Hur finner vi denna hastighetsskillnad?
+    - Vrig = V + (w X r), V är bollens hastighet, w är rotationshastigheten och r är kontaktpunkten.
