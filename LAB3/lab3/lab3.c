@@ -104,7 +104,7 @@ Material ballMt = { { 1.0, 1.0, 1.0, 1.0 }, { 1.0, 1.0, 1.0, 0.0 },
                 };
 
 
-enum {kNumBalls = 4}; // Change as desired, max 16
+enum {kNumBalls = 6}; // Change as desired, max 16
 
 //------------------------------Globals---------------------------------
 ModelTexturePair tableAndLegs, tableSurf;
@@ -189,7 +189,7 @@ void updateWorld()
         {
 
             vec3 difference = VectorSub(ball[i].X, ball[j].X);
-						if(Norm(difference) <= 2*kBallSize)
+						if(Norm(difference) <= 2*kBallSize && Norm(difference) > 0)
 						{
 							vec3 Vspeed = VectorSub(ball[i].v, ball[j].v);
 							vec3 normalVec = Normalize(difference);
@@ -206,13 +206,13 @@ void updateWorld()
 	{
 
         //this is the easy rotation
-		//float area = 2*PI  * kBallSize;
+				//float area = 2*PI  * kBallSize;
         //float angleX = (ball[i].v.x * deltaT) * 2 * PI / area;
         //float angleZ = (ball[i].v.z * deltaT) * 2 * PI / area;
         //vec3 rotX = {1.0, 0.0, 0.0};
         //vec3 rotZ = {0.0, 0.0, 1.0};
         //ball[i].R = Mult( Mult(ArbRotate(rotX, angleZ), ArbRotate(rotZ, -angleX)), ball[i].R );
-        
+
         vec3 Vrig = VectorAdd(ball[i].v, CrossProduct(ball[i].omega, contactPoint));
         vec3 Ff = ScalarMult(Vrig, -0.6);
         ball[i].F = VectorAdd(ball[i].F, Ff);
@@ -335,7 +335,7 @@ void init()
 		ball[i].X = SetVector(0.0, 0.0, 0.0);
 		ball[i].P = SetVector(((float)(i % 13))/ 50.0, 0.0, ((float)(i % 15))/50.0);
 		ball[i].R = IdentityMatrix();
-        float diag = (kBallSize*kBallSize*ball[i].mass)/3.0;
+        float diag = (kBallSize*kBallSize*ball[i].mass)/12.0;
         //float diag = (kBallSize*kBallSize*2*ball[i].mass)/5.0; //theoretical moment of inertia for sphere
 		ball[i].J = S(diag,diag,diag);
 		ball[i].Ji = InvertMat4(ball[i].J);
